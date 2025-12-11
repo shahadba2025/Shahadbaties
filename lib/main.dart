@@ -1,79 +1,62 @@
+import 'dart:io';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(const MyApp());
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: SebhaApp(),
-    );
-  }
+void main() {
+  runApp(const MaterialApp(
+    home: HomePage(),
+  ));
 }
 
-class SebhaApp extends StatefulWidget {
-  const SebhaApp({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  State<SebhaApp> createState() => _SebhaAppState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _SebhaAppState extends State<SebhaApp> {
-  int count = 0;
-  String currentText = "";
-
-  void _updateText(String newText) {
-    setState(() {
-      currentText = newText;
-      count++;
-    });
-  }
-
-  Widget _buildDhikrButton(String label) {
-    return ElevatedButton(
-      onPressed: () => _updateText(label),
-      child: Text(label),
-    );
-  }
+class _HomePageState extends State<HomePage> {
+  File? file;
+  FilePickerResult? result;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("مسبحة"),
-        backgroundColor: Colors.blue,
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text('File Picker cc')),
       body: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              currentText,
-              style: const TextStyle(fontSize: 34),
-            ),
-            const SizedBox(height: 25),
-            Text(
-              "$count",
-              style: const TextStyle(
-                fontSize: 50,
-                fontWeight: FontWeight.bold,
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          if (file != null || result != null) ...[
+            if (kIsWeb) ...[
+              Image.memory(
+                result!.files.first.bytes!,
+                height: 350,
+                width: 350,
+                fit: BoxFit.fill,
               ),
-            ),
-            const SizedBox(height: 30),
-            Wrap(
-              spacing: 15,
-              children: [
-                _buildDhikrButton("سبحان الله"),
-                _buildDhikrButton("الحمدلله"),
-                _buildDhikrButton("الله أكبر"),
-              ],
-            ),
+            ] else ...[
+              Image.file(file!, height: 150, width: 150, fit: BoxFit.fill),
+            ],
+            const SizedBox(height: 8),
           ],
-        ),
+          ElevatedButton(
+            onPressed: () async {
+              try {
+                result = await FilePicker.platform.pickFiles();
+                if (result != null) {
+                  if (!kIsWeb) {
+                    file = File(result!.files.single.path!);
+                  }
+                  setState(() {});
+                } else {
+                  // User canceled the picker
+                }
+              } catch (_) {}
+            },
+            child: const Text('Pick File'),
+          ),
+        ]),
       ),
     );
   }
